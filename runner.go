@@ -59,11 +59,14 @@ func (runner *RegressionRunner) runRegression() {
 	r := new(regression.Regression)
 
 	// Iterate through headers to generate variables
+	count := 0
+
 	for index, element := range runner.header {
 
 		// Add as regression or observed variable
 		if (index != runner.predictCol) {
-			r.SetVar(index, element)
+			r.SetVar(count, element)
+			count++
 		} else {
 			r.SetObserved(element)
 		}
@@ -95,6 +98,9 @@ func (runner *RegressionRunner) runRegression() {
 		runner.x = append(runner.x, regressors)
 		runner.y = append(runner.y, predictor)
 	}
+
+	fmt.Printf("X variables:\n%v\n", runner.x)
+	fmt.Printf("Y variables:\n%v\n", runner.y)
 
 	// Unwrap data points into function
 	r.Train(dataPoints...)
