@@ -64,13 +64,17 @@ a single regression, and we can do this for each variable:
 
 ![img/inhabitants-predict-murders.png](img/inhabitants-predict-murders.png)
 
+<br>
+
 #### Unemployment to predict murders
 
 ![img/unemployment-predict-murders.png](img/unemployment-predict-murders.png)
 
+<br>
+
 #### Low Income Percentage to predict murders
 
-![img/incomes-predict-murders.png](img/income-predict-murders.png)
+![img/incomes-predict-murders.png](img/incomes-predict-murders.png)
 
 
 As we can see, the number of inhabitants (on its own) is fairly useless. The variables
