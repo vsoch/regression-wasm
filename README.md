@@ -5,6 +5,13 @@ to perform a regression, using data from a table in the browser, which can be lo
 by the user. We use a simple [regression library](https://github.com/sajari/regression) to do
 the work. See the demo [here](https://vsoch.github.io/regression-wasm/) or continue reading.
 
+## Summary
+
+ - Run a multiple or single regression using Web Assembly
+ - Two variables (one predictor, one regression) will generate a line plot showing X vs. Y and predictions
+ - More than two variables (one predictor, multiple regressors) performs multiple regression to generate a residual histogram
+ - Upload your own data file, change the delimiter, the file name to be saved, or the predictor column
+
 ## Overview
 
 When you load the page, you are presented with a loaded data frame. The data is a bit dark,
@@ -49,6 +56,63 @@ Let's remove another one, the percent unemployed:
 
 ![img/line-plot.png](img/line-plot.png)
 
+Now we see a line plot, along with the plotting of the predictions! By simply removing
+each column one at a time (and leaving only one Y, and one X) we are actually running
+a single regression, and we can do this for each variable:
+
+#### Inhabitants to predict murders
+
+![img/inhabitants-predict-murders.png](img/inhabitants-predict-murders.png)
+
+#### Unemployment to predict murders
+
+![img/unemployment-predict-murders.png](img/unemployment-predict-murders.png)
+
+#### Low Income Percentage to predict murders
+
+![img/incomes-predict-murders.png](img/income-predict-murders.png)
+
+
+As we can see, the number of inhabitants (on its own) is fairly useless. The variables
+that are strongest here are unemployment and income. 
+
+## Download Data
+
+This of course is a very superficial overview, you would want to download the full model data to get more detail:
+The "Download Results" will appear after you generate any kind of plot, and it downloads
+a text file with the model output. Here is an example:
+
+```
+Dinosaur Regression Wasm
+Predicted = -36.7649 + X0*0.0000 + Inhabitants*1.1922 + Percent with incomes below $5000*4.7198
+Murders per annum per one million inhabitants|	X0|	Inhabitants|	Percent with incomes below $5000
+11.20|	587000.00|	16.50|	6.20
+13.40|	643000.00|	20.50|	6.40
+40.70|	635000.00|	26.30|	9.30
+5.30|	692000.00|	16.50|	5.30
+24.80|	1248000.00|	19.20|	7.30
+12.70|	643000.00|	16.50|	5.90
+20.90|	1964000.00|	20.20|	6.40
+35.70|	1531000.00|	21.30|	7.60
+8.70|	713000.00|	17.20|	4.90
+9.60|	749000.00|	14.30|	6.40
+14.50|	7895000.00|	18.10|	6.00
+26.90|	762000.00|	23.10|	7.40
+15.70|	2793000.00|	19.10|	5.80
+36.20|	741000.00|	24.70|	8.60
+18.10|	625000.00|	18.60|	6.50
+28.90|	854000.00|	24.90|	8.30
+14.90|	716000.00|	17.90|	6.70
+25.80|	921000.00|	22.40|	8.60
+21.70|	595000.00|	20.20|	8.40
+25.70|	3353000.00|	16.90|	6.70
+
+N = 20
+Variance observed = 92.76010000000001
+Variance Predicted = 75.90724706481737
+R2 = 0.8183178658153383
+```
+
 ## About
 
 ### Why?
@@ -74,6 +138,7 @@ The basics are here for a developer to create (some GoLang based) functions to
 perform data analysis on an input file, and render back to the screen as a plot.
 If you need any help, or want to request a custom tool, please don't hesitate to
 [open up an issue](https://www.github.com/vsoch/regression-wasm/issues).
+
 
 ## Development
 

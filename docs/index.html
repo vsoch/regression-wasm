@@ -91,6 +91,7 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/g/filesaver.js"></script>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/1.0.5/jquery.csv.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
@@ -117,6 +118,12 @@ function download() {
     document.body.removeChild(element);
 }
 
+// Download a PNG image
+function saveImage() {
+    var image = window.chart.getImageURI();
+    window.open(imgUri);
+}
+
 // must be defined in Window for GoLang wasm to access
 // In the case that we have more than 2 x, we plot residuals
 function plotResiduals(title, residuals, result) {
@@ -124,7 +131,8 @@ function plotResiduals(title, residuals, result) {
     var dataPoints = [["Row", "Residual"]]
    
     // Save result in case user wants to download
-    $("#result").html(result)
+    $("#result").html(result);
+    $("#download-button").show();
 
     $.each(residuals.split(','), function(index, number) { 
         dataPoints.push(["Row " + index, parseFloat(number)]);
@@ -135,9 +143,8 @@ function plotResiduals(title, residuals, result) {
       legend: {position: 'none'},
     };
 
-    var chart = new google.visualization.Histogram(document.getElementById('chart_div'));
+    chart = new google.visualization.Histogram(document.getElementById('chart_div'));
     chart.draw(data, options);
-    $("download-button").show();
 }
 
 // show a message from GoLang
@@ -160,6 +167,7 @@ function plotLinear(title, X, Y, predictions, headers, result) {
 
     // Save result in case user wants to download
     $("#result").html(result)
+    $("#download-button").show();
 
     headers = headers.split(',')
     headers.push("Predictions")
@@ -177,9 +185,8 @@ function plotLinear(title, X, Y, predictions, headers, result) {
         legend: {position: 'bottom'}
     };
 
-    var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+    chart = new google.visualization.LineChart(document.getElementById('chart_div'));
     chart.draw(data, options);
-
 }
 
 
