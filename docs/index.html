@@ -28,11 +28,11 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <p id="message"></p>
+                <p class="alert alert-info" id="message" style="display:none"></p>
             </div>
         </div>
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-5">
                 <h2>Data Table</h2>
 
                     <div class="form-check">
@@ -40,13 +40,26 @@
                         <label class="form-check-label" for="headerInclude">Includes header row</label>
                     </div>
 
-                    <div class="form-group">
-                        <input type="text" class="form-control" id="inputDelim" 
-                               aria-describedby="delimHelp" 
-                               value=","
-                               placeholder="Enter custom delimiter (if not comma)">
-                        <small id="delimHelp" class="form-text text-muted">Enter a custom delimiter here if you don't want to use the default comma (,)</small>
-                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="inputDelim" 
+                                       aria-describedby="delimHelp" 
+                                       value=","
+                                       placeholder="Enter custom delimiter (if not comma)">
+                                <small id="delimHelp" class="form-text text-muted">custom delimiter (default ,)</small>
+                            </div>
+                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="downloadName" 
+                                       aria-describedby="downloadHelp"
+                                       value="dinosaur-regression.txt"
+                                       placeholder="Enter download (.txt) file name">
+                                <small id="downloadHelp" class="form-text text-muted">download file name</small>
+                            </div>
+                         </div>
+                     </div>
 
                     <div class="form-group">
                         <label class="form-check-label" for="radios">Select Predictor Column</label>
@@ -64,8 +77,12 @@
 
                 <hr>
             </div>
-            <div class="col-md-6">
-                <svg class="line-chart"></svg>
+            <div class="col-md-7">
+                <div id="chart_div"></div>
+                <div id="plotText"></div>
+                <div id="result" style="display:none"></div>
+                <button style="float:right; display:none" id="download-button"
+                        onclick="download()" class="btn btn-primary btn-sm">Download Result</button>
             </div>
         </div>
         <div class="row">
@@ -79,135 +96,266 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.xkcd@1.1/dist/chart.xkcd.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" rel="stylesheet">
     <script src="wasm_exec.js"></script>
 
 <script>
+google.charts.load('current', {packages: ['corechart']});
+// google.charts.setOnLoadCallback(drawPlot);
 
-// must be defined in Window for GoLang wasm to access
-function drawPlot(string) {
-
-    console.log(string);
-    const svg = document.querySelector('.line-chart')
-    const lineChart = new chartXkcd.Line(svg, {
-        title: 'Monthly income of an indie developer', // optional
-        xLabel: 'Month', // optional
-        yLabel: '$ Dollors', // optional
-        data: {
-            labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
-            datasets: [{label: 'Plan',
-                        data: [30, 70, 200, 300, 500, 800, 1500, 2900, 5000, 8000],
-                        }, {label: 'Reality',
-                        data: [0, 1, 30, 70, 80, 100, 50, 80, 40, 150],
-                      }],
-        },
-        options: { // optional
-            yTickCount: 3,
-            legendPosition: chartXkcd.config.positionType.upLeft
-        }
-    });
+// Download a result (text file) for the regression
+function download() {
+    var element = document.createElement('a');
+    var text = $("#result").text()
+    var filename = $("#downloadName").val() || "dinosaur-regression.txt"
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
 }
 
-$(document).ready(function(){
+// must be defined in Window for GoLang wasm to access
+// In the case that we have more than 2 x, we plot residuals
+function plotResiduals(title, residuals, result) {
 
-    var starterData = [
-        ['Murders per annum per one million inhabitants', 
-         'Inhabitants', 
-         'Percent with incomes below $5000', 
-         'Percent unemployed'],
-        [11.2, 587000, 16.5, 6.2],
-        [13.4, 643000, 20.5, 6.4],
-        [40.7, 635000, 26.3, 9.3],
-        [5.3, 692000, 16.5, 5.3],
-        [24.8, 1248000, 19.2, 7.3],
-        [12.7, 643000, 16.5, 5.9],
-        [20.9, 1964000, 20.2, 6.4],
-        [35.7, 1531000, 21.3, 7.6],
-        [8.7, 713000, 17.2, 4.9],
-        [9.6, 749000, 14.3, 6.4],
-        [14.5, 7895000, 18.1, 6.0],
-        [26.9, 762000, 23.1, 7.4],
-        [15.7, 2793000, 19.1, 5.8],
-        [36.2, 741000, 24.7, 8.6],
-        [18.1, 625000, 18.6, 6.5],
-        [28.9, 854000, 24.9, 8.3],
-        [14.9, 716000, 17.9, 6.7],
-        [25.8, 921000, 22.4, 8.6],
-        [21.7, 595000, 20.2, 8.4],
-        [25.7, 3353000, 16.9, 6.7]
-    ];
+    var dataPoints = [["Row", "Residual"]]
+   
+    // Save result in case user wants to download
+    $("#result").html(result)
 
-    function updateRadios(number, selected) {
-        var number = number || 3
-        var selected = selected || 1
+    $.each(residuals.split(','), function(index, number) { 
+        dataPoints.push(["Row " + index, parseFloat(number)]);
+    });
+    var data = google.visualization.arrayToDataTable(dataPoints);
+    var options = {
+      title: "Residuals for model to predict: " + title,
+      legend: {position: 'none'},
+    };
+
+    var chart = new google.visualization.Histogram(document.getElementById('chart_div'));
+    chart.draw(data, options);
+    $("download-button").show();
+}
+
+// show a message from GoLang
+function showMessage(message, div_id) {
+   $("#" + div_id).html(message)
+   $("#" + div_id).show()
+}
+
+// Hide message if all goes well!
+function hideMessage(div_id) {
+   $("#" + div_id).hide()
+}
+
+// In the case that we have 2 variables, we draw line plot
+function plotLinear(title, X, Y, predictions, headers, result) {
+
+    X = X.split(',')
+    Y = Y.split(',')
+    predictions = predictions.split(',')
+
+    // Save result in case user wants to download
+    $("#result").html(result)
+
+    console.log("PLOT LINEAR")
+    console.log(X)
+    console.log(Y)
+    console.log(predictions)
+    headers = headers.split(',')
+    headers.push("Predictions")
+    console.log(headers)
+
+    var dataPoints = [headers]
+    $.each(X, function(index, value) { 
+        dataPoints.push([value, parseFloat(Y[index]), parseFloat(predictions[index])]);
+    });
+
+    var data = google.visualization.arrayToDataTable(dataPoints);
+
+    //var data = google.visualization.arrayToDataTable([
+    //      ['Year', 'Sales', 'Expenses'],
+    //      ['2004',  1000,      400],
+    //      ['2005',  1170,      460],
+    //      ['2006',  660,       1120],
+    //      ['2007',  1030,      540]
+    //    ]);
+
+    var options = {
+        title: title,
+        curveType: 'function',
+        legend: {position: 'bottom'}
+    };
+
+    var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+    chart.draw(data, options);
+
+}
+
+
+// Write custom text under the plot (usually the formula)
+function describePlot(message) {
+    $("#plotText").html(message);
+}
+
+var starterData = [
+    ['Murders per annum per one million inhabitants', 
+     'Inhabitants', 
+     'Percent with incomes below $5000', 
+     'Percent unemployed'],
+    [11.2, 587000, 16.5, 6.2],
+    [13.4, 643000, 20.5, 6.4],
+    [40.7, 635000, 26.3, 9.3],
+    [5.3, 692000, 16.5, 5.3],
+    [24.8, 1248000, 19.2, 7.3],
+    [12.7, 643000, 16.5, 5.9],
+    [20.9, 1964000, 20.2, 6.4],
+    [35.7, 1531000, 21.3, 7.6],
+    [8.7, 713000, 17.2, 4.9],
+    [9.6, 749000, 14.3, 6.4],
+    [14.5, 7895000, 18.1, 6.0],
+    [26.9, 762000, 23.1, 7.4],
+    [15.7, 2793000, 19.1, 5.8],
+    [36.2, 741000, 24.7, 8.6],
+    [18.1, 625000, 18.6, 6.5],
+    [28.9, 854000, 24.9, 8.3],
+    [14.9, 716000, 17.9, 6.7],
+    [25.8, 921000, 22.4, 8.6],
+    [21.7, 595000, 20.2, 8.4],
+    [25.7, 3353000, 16.9, 6.7]
+];
+
+// Determine indices of empty strings in array, we won't add these columns
+function getEmptyIndices(array){
+   empty = []
+   for(var i=0; i<array.length; i++){
+       if(String(array[i]).replace(" ","") === "" || array[i] == null) {  
+          empty.push(i);
+       }
+   }
+   return empty;
+}
+
+function updateTable(data) {
+
+    $('#data-table').empty();
+    const container = document.getElementById('data-table');
+    const hot = new Handsontable(container, {
+        data: data,
+        rowHeaders: true,
+        colHeaders: true,
+        licenseKey: "non-commercial-and-evaluation",
+        tableClassName: ['table', 'table-hover', 'table-striped'],
+        observeChanges: true,
+        afterChange: function(r, c){
+            var data = this.getData();
+            updatePlot(data);
+        }
+     });
+    updatePlot(hot.getData());
+}
+
+
+function updateRadios(number, selected) {
+    var number = number || 3
+    var selected = selected || 1
 
         // If previous predictor column greater than columns, set to first
-        if (selected > number) {
-            selected = 1;
-        }
-
-        var radios = $("#radios")
-        radios.empty();
-
-        // Dynamically add radio buttons, account for predictor column
-        for (i = 1; i <= number; i++) {            
-            if (selected == i) {
-                radios.append('<div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="predictVar" id="predictVar" value="' + i + '" checked><label class="form-check-label" for="predictVar' + i + '">' + i + '</label>');
-            } else {
-                radios.append('<div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="predictVar" id="predictVar" value="' + i + '"><label class="form-check-label" for="predictVar' + i + '">' + i + '</label>');
-            }
-        }
+    if (selected > number) {
+        selected = 1;
     }
 
-    function updateRegression(data) {
+    var radios = $("#radios")
+    radios.empty();
 
-        // Get other fields, if it's checked, and default delim
-        var isChecked = $("#headerInclude").is(":checked");
-        var delim = $("#inputDelim").val();
-        var predictCol = parseInt($("#predictVar").val());
-
-        // pass along string to golang to parse, if header present, and delim
-        // Won't be ready on first page load
-        if (typeof runRegression !== "undefined") { 
-            runRegression(data, isChecked, delim, predictCol);
+    // Dynamically add radio buttons, account for predictor column
+    for (i = 1; i <= number; i++) {            
+        if (selected == i) {
+            radios.append('<div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="predictVar" id="predictVar" value="' + i + '" checked><label class="form-check-label" for="predictVar' + i + '">' + i + '</label>');
+        } else {
+            radios.append('<div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="predictVar" id="predictVar" value="' + i + '"><label class="form-check-label" for="predictVar' + i + '">' + i + '</label>');
         }
-
     }
+}
 
-    function updateTable(data) {
+function updateRegression(data) {
 
-        $('#data-table').empty();
-        const container = document.getElementById('data-table');
-        const hot = new Handsontable(container, {
-            data: data,
-            rowHeaders: true,
-            colHeaders: true,
-            licenseKey: "non-commercial-and-evaluation",
-	    tableClassName: ['table', 'table-hover', 'table-striped'],
-            observeChanges: true,
-            afterChange: function(r, c){
-                var data = this.getData();
+    // Get other fields, if it's checked, and default delim
+    var isChecked = $("#headerInclude").is(":checked");
+    var delim = $("#inputDelim").val();
+    var predictCol = parseInt($("#predictVar").val());
 
-                // Function expects a string joined by delim
-                var delim = $("#inputDelim").val();
-
-                // Update radios with number of columns, and last selected
-                var predictCol = $("#predictVar").val();
-                var cols = 0;
-                stringData = ""
-                $.each(data, function(i, row){
-                    stringData += row.join(delim) + "\n"
-                    cols = row.length;
-                })
-                updateRadios(cols, predictCol)
-                updateRegression(stringData);
-
-            }
-         });
+    // pass along string to golang to parse, if header present, and delim
+    // Won't be ready on first page load
+    if (typeof runRegression !== "undefined") { 
+        runRegression(data, isChecked, delim, predictCol);
+    } else {
+        console.log("Web Assembly not loaded yet!")
     }
-    updateTable(starterData);
+}
 
+// Given data, update the plot
+function updatePlot(data) {
+
+    // Remove empty rows and columns
+    var headers = data[0];
+
+    // If a user removes a header row, it's considered empty
+    empty = getEmptyIndices(headers);
+    definedHeaders = headers.length - empty.length
+    var cleaned = [];
+
+    $.each(data, function(rowKey, row) {
+
+        var filtered = row.filter(function(value, index, arr){
+            return !empty.includes(index);
+        });
+
+        // The row must be fully defined (same length as headers)
+        if (definedHeaders == filtered.length) {
+            cleaned.push(filtered);
+        }  
+    });
+
+    // Function expects a string joined by delim
+    var delim = $("#inputDelim").val();
+
+    // Update radios with number of columns, and last selected
+    var predictCol = $("#predictVar").val();
+    var cols = 0;
+    stringData = ""
+    $.each(cleaned, function(i, row){
+        stringData += row.join(delim) + "\n"
+        cols = row.length;
+    })
+    updateRadios(cols, predictCol)
+    updateRegression(stringData);
+}
+
+
+if (WebAssembly) {
+
+    // WebAssembly.instantiateStreaming is not currently available in Safari
+    if (WebAssembly && !WebAssembly.instantiateStreaming) { // polyfill
+        WebAssembly.instantiateStreaming = async (resp, importObject) => {
+            const source = await (await resp).arrayBuffer();
+            return await WebAssembly.instantiate(source, importObject);
+         };
+    }  
+ 
+    const go = new Go();
+    WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
+        go.run(result.instance);
+    });
+} else {
+    console.log("WebAssembly is not supported in your browser")
+} 
+
+
+$(document).ready(function(){
     $("#csvInput").change(function(){
 
         // Check that ends with csv
@@ -229,25 +377,12 @@ $(document).ready(function(){
         // Read in the csv file
         reader.readAsText(file)
     })
+
+    // Small delay to let web assembly load
+    setTimeout(function(){
+        updateTable(starterData);
+    }, 1000);
 })
-
-
-if (WebAssembly) {
-    // WebAssembly.instantiateStreaming is not currently available in Safari
-    if (WebAssembly && !WebAssembly.instantiateStreaming) { // polyfill
-        WebAssembly.instantiateStreaming = async (resp, importObject) => {
-            const source = await (await resp).arrayBuffer();
-            return await WebAssembly.instantiate(source, importObject);
-         };
-    }  
- 
-    const go = new Go();
-    WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
-        go.run(result.instance);
-    });
-    } else {
-        console.log("WebAssembly is not supported in your browser")
-    } 
 </script>
 </body>
 </html>
