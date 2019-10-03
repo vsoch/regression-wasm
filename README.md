@@ -27,7 +27,7 @@ This is what you see:
 The formula for our regression model is shown below the plot, in human friendly terms.
 
 ```
-Predicted = -36.7649 + X0*0.0000 + Inhabitants*1.1922 + Percent with incomes below $5000*4.7198
+Predicted = -36.7649 + Inhabitants*0.0000 + Percent with incomes below $5000*1.1922 + Percent unemployed*4.7198
 ```
 
 ### Residual Plot
@@ -88,8 +88,8 @@ a text file with the model output. Here is an example:
 
 ```
 Dinosaur Regression Wasm
-Predicted = -36.7649 + X0*0.0000 + Inhabitants*1.1922 + Percent with incomes below $5000*4.7198
-Murders per annum per one million inhabitants|	X0|	Inhabitants|	Percent with incomes below $5000
+Predicted = -36.7649 + Inhabitants*0.0000 + Percent with incomes below $5000*1.1922 + Percent unemployed*4.7198
+Murders per annum per one million inhabitants|	Inhabitants|	Percent with incomes below $5000|	Percent unemployed
 11.20|	587000.00|	16.50|	6.20
 13.40|	643000.00|	20.50|	6.40
 40.70|	635000.00|	26.30|	9.30
