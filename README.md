@@ -3,7 +3,51 @@
 This repository serves a simple [web assembly](https://webassembly.org/) (wasm) application 
 to perform a regression, using data from a table in the browser, which can be loaded as a delimited file
 by the user. We use a simple [regression library](https://github.com/sajari/regression) to do
-the work.
+the work. See the demo [here](https://vsoch.github.io/regression-wasm/) or continue reading.
+
+## Overview
+
+When you load the page, you are presented with a loaded data frame. The data is a bit dark,
+but it's a nice dataset to show how this works. The first column is the number of murders (per
+million habitants) for some city, and each of the remaining columns are variables that might
+be used to predict it (inhabitants, percent with incomes below $5000, and percent unemployed).
+This is what you see:
+
+![img/basics.png](img/basics.png)
+
+### Formula
+
+The formula for our regression model is shown below the plot, in human friendly terms.
+
+```
+Predicted = -36.7649 + X0*0.0000 + Inhabitants*1.1922 + Percent with incomes below $5000*4.7198
+```
+
+### Residual Plot
+
+Given that we have more than one regressor variable, we need to run a multiple regression,
+and so the plot in the upper right is a histogram of the residuals.
+
+ > the residuals are the difference between the actual values (number of murders per million habitants) and the values predicted by our model.
+
+### Filtering
+
+If you remove any single value from a row, it invalidates it, and it won't be included
+in the plot. If you remove a column heading, it's akin to removing the entire column.
+
+### Line Plot
+
+But what if we want to plot the relationship between one of the variables X, and our Y?
+This is where the tool gets interesting! By removing a column header, we essentially
+remove the column from the dataset. Let's first try removing just one, Inhabitants:
+
+![img/remove1.png](img/remove1.png)
+
+
+We still see a residual plot because it would require more than two dimensions to plot.
+Let's remove another one, the percent unemployed:
+
+![img/line-plot.png](img/line-plot.png)
 
 ## About
 

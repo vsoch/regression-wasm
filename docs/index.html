@@ -161,10 +161,6 @@ function plotLinear(title, X, Y, predictions, headers, result) {
     // Save result in case user wants to download
     $("#result").html(result)
 
-    console.log("PLOT LINEAR")
-    console.log(X)
-    console.log(Y)
-    console.log(predictions)
     headers = headers.split(',')
     headers.push("Predictions")
     console.log(headers)
@@ -175,15 +171,6 @@ function plotLinear(title, X, Y, predictions, headers, result) {
     });
 
     var data = google.visualization.arrayToDataTable(dataPoints);
-
-    //var data = google.visualization.arrayToDataTable([
-    //      ['Year', 'Sales', 'Expenses'],
-    //      ['2004',  1000,      400],
-    //      ['2005',  1170,      460],
-    //      ['2006',  660,       1120],
-    //      ['2007',  1030,      540]
-    //    ]);
-
     var options = {
         title: title,
         curveType: 'function',
@@ -243,7 +230,7 @@ function updateTable(data) {
 
     $('#data-table').empty();
     const container = document.getElementById('data-table');
-    const hot = new Handsontable(container, {
+    window.hot = new Handsontable(container, {
         data: data,
         rowHeaders: true,
         colHeaders: true,
@@ -255,7 +242,7 @@ function updateTable(data) {
             updatePlot(data);
         }
      });
-    updatePlot(hot.getData());
+    updatePlot(window.hot.getData());
 }
 
 
@@ -274,11 +261,15 @@ function updateRadios(number, selected) {
     // Dynamically add radio buttons, account for predictor column
     for (i = 1; i <= number; i++) {            
         if (selected == i) {
-            radios.append('<div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="predictVar" id="predictVar" value="' + i + '" checked><label class="form-check-label" for="predictVar' + i + '">' + i + '</label>');
+            radios.append('<div class="form-check form-check-inline radio"><input class="form-check-input" type="radio" name="predictVar" id="predictVar' + i + '" value="' + i + '" checked><label class="form-check-label" for="predictVar' + i + '">' + i + '</label>');
         } else {
-            radios.append('<div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="predictVar" id="predictVar" value="' + i + '"><label class="form-check-label" for="predictVar' + i + '">' + i + '</label>');
+            radios.append('<div class="form-check form-check-inline radio"><input class="form-check-input" type="radio" name="predictVar" id="predictVar' + i + '" value="' + i + '"><label class="form-check-label" for="predictVar' + i + '">' + i + '</label>');
         }
     }
+
+    $(".radio").change(function(){
+        updatePlot(window.hot.getData());
+    })
 }
 
 function updateRegression(data) {
@@ -286,7 +277,7 @@ function updateRegression(data) {
     // Get other fields, if it's checked, and default delim
     var isChecked = $("#headerInclude").is(":checked");
     var delim = $("#inputDelim").val();
-    var predictCol = parseInt($("#predictVar").val());
+    var predictCol = parseInt($("input[name='predictVar']:checked"). val());
 
     // pass along string to golang to parse, if header present, and delim
     // Won't be ready on first page load
@@ -324,7 +315,7 @@ function updatePlot(data) {
     var delim = $("#inputDelim").val();
 
     // Update radios with number of columns, and last selected
-    var predictCol = $("#predictVar").val();
+    var predictCol = parseInt($("input[name='predictVar']:checked"). val());
     var cols = 0;
     stringData = ""
     $.each(cleaned, function(i, row){
@@ -354,10 +345,9 @@ if (WebAssembly) {
     console.log("WebAssembly is not supported in your browser")
 } 
 
-
 $(document).ready(function(){
-    $("#csvInput").change(function(){
 
+    $("#csvInput").change(function(){
         // Check that ends with csv
             
         var file = $('#csvInput').prop('files')[0];
