@@ -139,7 +139,6 @@ perform data analysis on an input file, and render back to the screen as a plot.
 If you need any help, or want to request a custom tool, please don't hesitate to
 [open up an issue](https://www.github.com/vsoch/regression-wasm/issues).
 
-
 ## Development
 
 ### Local
