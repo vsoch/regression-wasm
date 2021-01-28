@@ -159,7 +159,14 @@ $ git clone https://www.github.com/vsoch/regression-wasm
 And then build the wasm.
 
 ```bash
+$ cd regression-wasm
 $ make
+```
+
+Add your own Go version specific `wasm_exec.js` file :
+
+```bash
+$ cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./docs
 ```
 
 And cd into the "docs" folder and start a server to see the result.
